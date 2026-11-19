@@ -1,0 +1,521 @@
+<meta charset="utf-8">
+<title>Hypothesis Testing, Easy Actually</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Patrick+Hand&family=Libre+Baskerville:wght@400;700&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/roughjs@4.6.6/bundled/rough.js"></script>
+<style>
+/* Layout: one 1600x900 black stage scaled to fit; things float freely like the channel's frames. Each slide plays its own build animation on arrival. */
+:root{
+  --bg:#000; --ink:#F4F4F0; --y:#F2D13B; --r:#FF4A4A; --b:#4BA3FF; --g:#5BD46B; --grey:#8a8a84; --paper:#FBFAF4; --paper-ink:#151515; --bar:#111;
+  --hand:"Patrick Hand","Comic Sans MS","Segoe Print",cursive; --serif:"Libre Baskerville",Georgia,"Times New Roman",serif; --meme:Impact,Anton,"Arial Narrow Bold",sans-serif;
+  color-scheme:dark;
+}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);overflow:hidden}
+body{font-family:var(--hand)}
+#stage{position:absolute;left:50%;top:50%;width:1600px;height:900px;transform-origin:center;background:var(--bg);overflow:hidden}
+.slide{position:absolute;inset:0;display:none;padding:56px 90px;box-sizing:border-box;font-size:42px;line-height:1.25}
+.slide.on{display:block}
+.a{position:absolute}
+.rot{transform:rotate(var(--r,-2deg))}
+.t-title{font-size:132px;line-height:1.02;color:var(--y)}
+.h{font-size:66px;color:var(--y);line-height:1.1}
+.wavy{text-decoration:underline wavy var(--y) 3px;text-underline-offset:14px;text-decoration-skip-ink:none}
+.wavy.r{text-decoration-color:var(--r)}
+.big{font-size:58px}.huge{font-size:96px;line-height:1}.sm{font-size:32px}.xs{font-size:26px}
+.y{color:var(--y)}.r{color:var(--r)}.b{color:var(--b)}.g{color:var(--g)}.grey{color:var(--grey)}.w{color:var(--ink)}
+.c{text-align:center}
+.cut{display:block;height:auto}
+.stick svg,.binom svg,.bell svg{display:block;width:100%;height:auto;overflow:visible}
+.ink{position:absolute;inset:0;pointer-events:none}
+.ink svg{width:1600px;height:900px;display:block}
+table{color:inherit;font:inherit}
+.paper{background:var(--paper);color:var(--paper-ink);border:7px solid var(--y);padding:28px 36px;font-family:var(--serif);font-size:28px;line-height:1.45;box-sizing:border-box}
+.paper h3{margin:0 0 12px;font-size:34px}
+.paper table{border-collapse:collapse;width:100%}
+.paper td,.paper th{border-bottom:1px solid #c9c6b8;padding:8px 12px;text-align:left;vertical-align:top}
+.paper th{font-size:22px;letter-spacing:.06em;text-transform:uppercase;color:#555}
+.paper .hand{font-family:var(--hand);font-size:32px}
+.sticky{background:#F7E27A;color:#1b1b1b;font-size:44px;width:120px;height:110px;display:grid;place-items:center;transform:rotate(var(--r,2deg))}
+.stamp{border:6px solid currentColor;padding:4px 22px;font-size:46px;letter-spacing:.06em;transform:rotate(var(--r,-8deg));text-transform:uppercase;white-space:nowrap}
+.card{border:4px solid var(--y);padding:18px 26px;border-radius:4px}
+.sec-num{font-size:40px;color:var(--grey);letter-spacing:.08em}
+.grid2x2{display:grid;grid-template-columns:260px 1fr 1fr;grid-template-rows:170px 1fr 1fr;gap:14px}
+.grid2x2>div{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:10px 14px;font-size:38px;line-height:1.15}
+.grid2x2 .big{font-size:50px}.grid2x2 .sm{font-size:32px}
+.grid2x2.compact{grid-template-columns:190px 1fr 1fr;grid-template-rows:110px 1fr 1fr}
+.grid2x2.compact>div{font-size:32px}.grid2x2.compact .sm{font-size:26px}
+.cell.bad{border:5px solid var(--r)}.cell.bad2{border:5px solid var(--b)}.cell.ok{border:4px solid var(--g)}
+.list-blank{font-size:46px;line-height:1.5}
+.list-blank span.line{display:inline-block;width:520px;border-bottom:3px solid var(--ink);transform:translateY(-10px)}
+.btn{font-family:var(--hand);font-size:36px;background:transparent;color:var(--y);border:4px solid var(--y);padding:8px 28px;cursor:pointer;border-radius:3px;transform:rotate(-1deg)}
+.btn:hover{background:#2a2508}.btn.on{background:var(--y);color:#000}
+.btn:focus-visible,input:focus-visible,#nav button:focus-visible,.thumb:focus-visible{outline:4px dashed var(--b);outline-offset:4px}
+.coinrow{display:flex;gap:12px}
+.coinrow span{width:70px;height:70px;border-radius:50%;border:4px solid var(--y);display:grid;place-items:center;font-size:38px}
+.coinrow span.H{background:var(--y);color:#000}
+input[type=range]{width:520px;accent-color:#F2D13B;height:30px}
+table.verdict{border-collapse:collapse;font-size:38px}
+table.verdict td,table.verdict th{padding:10px 26px;border-bottom:3px solid #333;text-align:left}
+table.verdict th{color:var(--grey);font-size:30px;font-weight:normal}
+.panel{border:4px solid var(--ink);width:330px;height:420px;position:relative;transform:rotate(var(--r,0deg))}
+.panel .cap{position:absolute;left:14px;right:14px;bottom:12px;font-size:30px;line-height:1.1;text-align:center}
+.bang{font-family:var(--meme);color:var(--r);font-size:110px;letter-spacing:.02em;transform:rotate(var(--r,-10deg));text-shadow:5px 5px 0 #000}
+
+/* memes: real template image + caption layer in % coordinates */
+.meme{position:absolute}
+.meme>img{display:block;width:100%;height:auto}
+.ml{position:absolute;text-align:center;line-height:1.05;font-family:var(--meme);text-transform:uppercase;color:#fff;
+  -webkit-text-stroke:2px #000;paint-order:stroke fill;text-shadow:2px 2px 0 #000,-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000}
+.ml.k{color:#111;-webkit-text-stroke:0;text-shadow:none;font-family:Arial,Helvetica,sans-serif;font-weight:700;text-transform:none}
+.mcap{font-size:44px}
+
+/* ---------- arrival animations ---------- */
+.slide.play>*,.slide.play [data-s]{animation:pop .5s cubic-bezier(.2,1.5,.4,1) both;animation-delay:calc(var(--d,0) * .55s + .1s)}
+.slide.play .flip{animation:flip 1.3s cubic-bezier(.3,.7,.3,1) both;animation-delay:calc(var(--d,0) * .55s + .1s)}
+.slide.play .slam{animation:slam .55s cubic-bezier(.5,0,.6,1.4) both;animation-delay:calc(var(--d,0) * .55s + .1s)}
+.slide.play .stamp{animation:stamp .45s cubic-bezier(.5,0,.5,1.3) both;animation-delay:calc(var(--d,0) * .55s + .1s)}
+.slide.play .jab{animation:pop .4s both,jab .45s ease-in-out 3 both;animation-delay:calc(var(--d,0) * .55s + .1s),calc(var(--d,0) * .55s + .7s)}
+.slide.play .drop{animation:drop .7s cubic-bezier(.3,1.5,.5,1) both;animation-delay:calc(var(--d,0) * .55s + .1s)}
+.slide.play .spin{animation:spin 2.4s cubic-bezier(.1,.6,.2,1) both;animation-delay:calc(var(--d,0) * .55s + .1s)}
+.slide.play .wobble{animation:pop .4s both,wobble .35s ease-in-out 4 both;animation-delay:calc(var(--d,0) * .55s + .1s),calc(var(--d,0) * .55s + .6s)}
+.slide.play.shake{animation:shake .4s ease-in-out both;animation-delay:var(--shd,1s)}
+.slide.play .stick path:not(.dash),.slide.play .ink path:not(.dash),.slide.play .binom path:not(.dash),.slide.play .bell path:not(.dash){stroke-dasharray:1 1;stroke-dashoffset:1;animation:draw 1s ease-out both;animation-delay:calc(var(--d,0) * .55s + .25s)}
+.slide.play .coinrow span{animation:flip .7s ease-out both;animation-delay:calc(var(--i,0) * .07s)}
+#alphaChart path,#flipChart path{animation:none!important;stroke-dasharray:none!important}
+@keyframes pop{from{opacity:0;scale:.9}to{opacity:1;scale:1}}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes flip{0%{opacity:0;transform:perspective(900px) rotateY(0);translate:0 60px}15%{opacity:1}55%{translate:0 -150px}100%{transform:perspective(900px) rotateY(1440deg);translate:0 0}}
+@keyframes slam{0%{opacity:0;rotate:-75deg;translate:-40px -160px}55%{opacity:1;rotate:8deg;translate:0 0}75%{rotate:-4deg}100%{rotate:0deg;translate:0 0}}
+@keyframes stamp{0%{opacity:0;scale:3}60%{opacity:1;scale:.9}100%{scale:1}}
+@keyframes jab{0%,100%{translate:0 0}35%{translate:26px 0}70%{translate:-6px 0}}
+@keyframes drop{from{translate:0 -700px}to{translate:0 0}}
+@keyframes spin{from{rotate:-1440deg;opacity:0}10%{opacity:1}to{rotate:0deg}}
+@keyframes wobble{0%,100%{rotate:0deg}25%{rotate:-7deg}75%{rotate:7deg}}
+@keyframes shake{0%,100%{translate:0 0}20%{translate:-14px 8px}40%{translate:12px -6px}60%{translate:-8px 4px}80%{translate:5px -2px}}
+@media (prefers-reduced-motion:reduce){.slide.play *,.slide.play{animation:none!important}.slide.play path{stroke-dasharray:none!important}}
+
+/* ---------- PDF-style navigation ---------- */
+#nav{position:fixed;left:50%;bottom:max(12px,env(safe-area-inset-bottom,0px));translate:-50% 0;display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bar);border:2px solid #333;border-radius:10px;font:20px var(--hand);color:var(--ink);z-index:20;transition:opacity .3s;max-width:calc(100vw - 32px);flex-wrap:wrap;justify-content:center}
+#nav.idle{opacity:0;pointer-events:none}
+#nav button{font:inherit;color:var(--ink);background:#1d1d1d;border:2px solid #3a3a3a;border-radius:6px;padding:4px 12px;cursor:pointer}
+#nav button:hover{border-color:var(--y);color:var(--y)}
+#nNum{width:58px;font:inherit;background:#000;color:var(--y);border:2px solid #3a3a3a;border-radius:6px;padding:2px 6px;text-align:center}
+#nSec{color:var(--grey);min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px}
+#grid{position:fixed;inset:0;background:rgba(0,0,0,.94);z-index:30;overflow-y:auto;padding:24px max(16px,env(safe-area-inset-right,0px)) 40px max(16px,env(safe-area-inset-left,0px));box-sizing:border-box}
+#grid h2{font:36px var(--hand);color:var(--y);margin:0 0 16px}
+#gridInner{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px}
+.thumb{position:relative;aspect-ratio:16/9;max-width:100%;overflow:hidden;border:3px solid #333;border-radius:6px;background:#000;cursor:pointer;padding:0}
+.thumb.cur{border-color:var(--y)}
+.thumb:hover{border-color:var(--b)}
+.thumb .tin{position:absolute;left:0;top:0;width:1600px;height:900px;transform-origin:0 0;pointer-events:none}
+.thumb .tin .slide{display:block}
+.thumb .tn{position:absolute;left:6px;bottom:4px;font:18px var(--hand);color:var(--y);background:#000c;padding:0 6px;border-radius:4px}
+</style>
+
+<div id="stage">
+
+<!-- 1 · TITLE -->
+<section class="slide" data-sec="Intro">
+  <div class="a t-title" style="left:110px;top:170px;width:1100px">hypothesis testing<br>is <span class="wavy">easy, actually</span></div>
+  <div class="a sm grey" data-s="1" style="left:116px;top:500px">CS 217 · Week 11 · explained with few word and more picture</div>
+  <div class="a big" data-s="2" style="left:116px;top:620px">all you need: <span class="y">a coin and trust issues</span></div>
+  <div class="stick a" data-s="1" data-pose="hold" data-face="sus" style="left:1150px;top:280px;width:230px"></div>
+  <img class="a cut flip" data-s="2" src="img/coin.png" alt="a coin" style="left:1350px;top:320px;width:130px">
+</section>
+
+<!-- 2 · SUSPICIOUS COIN -->
+<section class="slide">
+  <div class="a big" style="left:90px;top:40px">you flip a friend's coin 10 times. rigged?</div>
+  <div class="a c" data-s="1" style="left:60px;top:150px;width:300px"><div class="big y">9 heads</div></div>
+  <div class="stick a" data-s="1" data-pose="think" data-face="sus" style="left:150px;top:240px;width:130px"></div>
+  <div class="a c sm" data-s="1" style="left:60px;top:480px;width:300px">hmm. kinda sus.</div>
+  <div class="a c" data-s="2" style="left:370px;top:150px;width:300px"><div class="big y">0 heads</div></div>
+  <div class="stick a" data-s="2" data-pose="cheer" data-face="shock" style="left:455px;top:240px;width:140px"></div>
+  <div class="a c sm" data-s="2" style="left:370px;top:480px;width:300px"><span class="r">DEFINITELY</span> rigged</div>
+  <div class="a c" data-s="3" style="left:680px;top:150px;width:300px"><div class="big y">3 heads</div></div>
+  <div class="stick a" data-s="3" data-pose="shrug" data-face="neutral" style="left:770px;top:240px;width:130px"></div>
+  <div class="a c sm" data-s="3" style="left:680px;top:480px;width:300px">eh. could be luck.</div>
+  <div class="a sm c" data-s="4" style="left:1020px;top:130px;width:520px">me when it's 9 heads:</div>
+  <div class="meme" data-s="4" style="left:1020px;top:190px;width:520px"><img src="img/memes/neuron.jpg" alt="Neuron activation meme"></div>
+  <div class="a big c" data-s="5" style="left:0;right:0;top:640px">hypothesis testing = <span class="y wavy">being suspicious, but with math</span></div>
+</section>
+
+<!-- 3 · COURTROOM -->
+<section class="slide shake" data-sec="The courtroom" style="--shd:3.2s">
+  <div class="a h" style="left:90px;top:40px">every test is a tiny trial</div>
+  <div class="a" data-s="1" style="left:90px;top:150px;width:780px"><span class="y" style="font-size:46px">H<sub>0</sub>, null hypothesis</span><br><span class="sm">= innocent until proven guilty <span class="grey">· coin is fair, P(heads) = 0.5</span></span></div>
+  <div class="a" data-s="2" style="left:90px;top:300px;width:780px"><span class="r" style="font-size:46px">H<sub>A</sub>, alternative hypothesis</span><br><span class="sm">= the accusation <span class="grey">· coin is rigged, P(heads) ≠ 0.5</span></span></div>
+  <div class="a" data-s="3" style="left:90px;top:450px;width:780px"><span class="y" style="font-size:46px">X, test statistic</span><br><span class="sm">= the evidence <span class="grey">· number of heads in 10 flips</span></span></div>
+  <div class="a" data-s="4" style="left:90px;top:600px;width:780px"><span class="y" style="font-size:46px">null distribution</span><br><span class="sm">= how an innocent coin behaves <span class="grey">· Binomial(10, 0.5)</span></span></div>
+  <div class="meme" data-s="2" style="left:900px;top:140px;width:640px">
+    <img src="img/memes/yellingcat.jpg" alt="Woman yelling at cat meme">
+    <div class="ml k" style="left:2%;top:2%;width:46%;font-size:30px">H<sub>A</sub>: "THIS COIN IS RIGGED!!"</div>
+    <div class="ml k" style="left:52%;top:2%;width:46%;font-size:30px">H<sub>0</sub>: "I'm literally just a coin"</div>
+  </div>
+  <img class="a cut rot slam" data-s="5" src="img/gavel.png" alt="a gavel" style="--r:-12deg;left:1280px;top:640px;width:240px">
+  <div class="a bang" data-s="5" style="--d:5.6;left:960px;top:680px;font-size:90px">ORDER!</div>
+</section>
+
+<!-- 4 · FAIR COIN + ALPHA -->
+<section class="slide" data-sec="Fair coins and α">
+  <div class="a h" style="left:90px;top:30px">what a fair coin actually does</div>
+  <div class="a binom" data-vals="1" data-red="0,1,2,8,9,10" data-rs="2" style="left:60px;top:130px;width:840px"></div>
+  <div class="a" data-s="1" style="left:960px;top:140px;width:600px;font-size:44px">exactly 5 heads? only <span class="b">24.6%</span>.<br>fair coins are weird.</div>
+  <div class="a sm" data-s="2" style="left:960px;top:300px;width:600px">red zone: ≤ 2 or ≥ 8 heads<br>0.001 + 0.010 + 0.044 (× 2) = <span class="r">0.11</span></div>
+  <img class="a cut" data-s="3" src="img/coin.png" alt="the coin" style="left:990px;top:450px;width:190px">
+  <div class="ink" data-s="3" data-d="face 1085 545 100 sad k"></div>
+  <div class="ink drop" data-s="3" data-d="bars 965 430 240 230"></div>
+  <div class="a sm" data-s="3" style="left:1230px;top:470px;width:330px">we'd jail an <span class="g">innocent</span> coin <span class="r">11%</span> of the time</div>
+  <div class="a paper rot" data-s="4" style="--r:-1deg;left:90px;top:720px;width:1420px;font-size:30px">that 11% is the <b>significance level α</b> = P(reject H<sub>0</sub> | H<sub>0</sub> is true). <span class="hand">the false-alarm rate, picked before you look.</span></div>
+</section>
+
+<!-- 5 · TYPE I / II -->
+<section class="slide" data-sec="Two ways to mess up">
+  <div class="a h" style="left:90px;top:30px">two ways to mess up</div>
+  <div class="a grid2x2 compact" style="left:60px;top:130px;width:900px;height:620px">
+    <div></div>
+    <div>coin is <span class="g">fair</span><br><span class="sm grey">H<sub>0</sub> true</span></div>
+    <div>coin is <span class="r">rigged</span><br><span class="sm grey">H<sub>A</sub> true</span></div>
+    <div style="align-items:flex-start;text-align:left">we convict<br><span class="sm grey">reject H<sub>0</sub></span></div>
+    <div class="cell bad" data-s="1"><span class="r" style="font-size:42px">Type I error</span>false positive<br><span class="sm grey">jailed an innocent coin</span></div>
+    <div class="cell ok" data-s="2"><span class="g">✓ correct</span></div>
+    <div style="align-items:flex-start;text-align:left">we let it go<br><span class="sm grey">don't reject H<sub>0</sub></span></div>
+    <div class="cell ok" data-s="2"><span class="g">✓ correct</span></div>
+    <div class="cell bad2" data-s="3"><span class="b" style="font-size:42px">Type II error</span>false negative<br><span class="sm grey">the cheater got away</span></div>
+  </div>
+  <img class="a cut wobble" data-s="1" src="img/smoke_detector.png" alt="a smoke detector" style="left:1010px;top:120px;width:130px">
+  <div class="a xs" data-s="1" style="left:1160px;top:125px;width:400px">smoke alarm logic:<br><span class="r">Type I</span> = alarm, but it was toast<br><span class="b">Type II</span> = real fire, no alarm</div>
+  <div class="meme" data-s="3" style="left:1000px;top:330px;width:560px">
+    <img src="img/memes/thisisfine.jpg" alt="This is fine meme">
+    <div class="ml" style="left:2%;top:4%;width:46%;font-size:22px">the coin: actually rigged</div>
+    <div class="ml" style="left:2%;top:76%;width:46%;font-size:22px">our test: "fail to reject H<sub>0</sub>"</div>
+  </div>
+  <div class="a sm grey" data-s="4" style="left:1000px;top:640px;width:560px">smaller α → fewer false alarms, more missed fires.</div>
+</section>
+
+<!-- 6 · RECIPE -->
+<section class="slide" data-sec="The recipe">
+  <div class="a paper rot" style="--r:-1.5deg;left:90px;top:60px;width:900px;font-size:30px">
+    <h3>The 3-step recipe</h3>
+    <p style="margin:8px 0" data-s="1"><b>1.</b> Pick H<sub>0</sub>. <span class="hand">our coin: P(heads) = 0.5</span></p>
+    <p style="margin:8px 0" data-s="2"><b>2.</b> One-sided or two-sided H<sub>A</sub>? <span class="hand">which direction makes you suspicious?</span></p>
+    <p style="margin:8px 0" data-s="3"><b>3.</b> Pick α (0.1, 0.05, 0.01) and find the rejection region.</p>
+  </div>
+  <div class="a sm y" data-s="4" style="left:110px;top:440px">one-sided: "rigged towards heads"</div>
+  <div class="a binom" data-s="4" data-red="8,9,10" style="left:90px;top:500px;width:430px"></div>
+  <div class="a sm b" data-s="5" style="left:580px;top:440px">two-sided: "rigged either way"</div>
+  <div class="a binom" data-s="5" data-red="0,1,9,10" style="left:560px;top:500px;width:430px"></div>
+  <div class="meme" data-s="2" style="left:1110px;top:80px;width:400px">
+    <img src="img/memes/twobuttons.jpg" alt="Two buttons meme">
+    <div class="ml k" style="left:3%;top:5%;width:42%;font-size:26px;transform:rotate(-12deg)">one-sided</div>
+    <div class="ml k" style="left:46%;top:1%;width:42%;font-size:26px;transform:rotate(-12deg)">two-sided</div>
+    <div class="ml" style="left:4%;top:86%;width:92%;font-size:30px">me picking H<sub>A</sub></div>
+  </div>
+</section>
+
+<!-- 7 · REJECTION REGIONS -->
+<section class="slide">
+  <div class="a h" style="left:90px;top:30px">step 3: α is your <span class="r">false-alarm budget</span></div>
+  <div class="a sm" data-s="1" style="left:90px;top:130px;width:1400px">add the most extreme results to the red zone one at a time. stop before the total goes over α.</div>
+  <table class="a verdict" data-s="2" style="left:90px;top:230px;font-size:34px">
+    <tr><th>test</th><th>α</th><th>rejection region</th><th>actual rate</th></tr>
+    <tr><td>two-sided</td><td>0.01</td><td class="y">{0, 10}</td><td>0.002</td></tr>
+    <tr><td>two-sided</td><td>0.05</td><td class="y">{0, 1, 9, 10}</td><td>0.021</td></tr>
+    <tr><td>heads only</td><td>0.1</td><td class="y">{8, 9, 10}</td><td>0.055</td></tr>
+    <tr><td>tails only</td><td>0.1</td><td class="y">{0, 1, 2}</td><td>0.055</td></tr>
+  </table>
+  <div class="a binom" data-s="3" data-vals="1" data-red="0,1,9,10" data-try="2,8" data-ts="4" style="left:920px;top:220px;width:640px"></div>
+  <div class="a sm" data-s="4" style="left:940px;top:610px;width:620px">two-sided, α = 0.05: add 2 and 8 too?<br>0.021 + 0.088 = 0.109 <span class="r">✗ over budget</span></div>
+  <div class="stick a" data-s="5" data-pose="cheer" data-face="happy" style="left:200px;top:610px;width:120px"></div>
+  <div class="a sm y" data-s="5" style="left:340px;top:740px">piece of cake</div>
+</section>
+
+<!-- 8 · REAL LIFE -->
+<section class="slide" data-sec="Real life">
+  <div class="a h" style="left:90px;top:30px">real life edition</div>
+  <div class="ink" data-d="line 800 140 800 860 grey"></div>
+  <img class="a cut wobble" data-s="1" src="img/megabox.png" alt="a Brawl Stars Mega Box" style="left:90px;top:130px;width:150px">
+  <div class="a sm" data-s="1" style="left:260px;top:140px;width:510px"><span class="y">Brawl Stars:</span> say a Mega Box gives a legendary 1% of the time. H<sub>A</sub>: p &lt; 0.01</div>
+  <div class="a sm" data-s="2" style="left:90px;top:330px;width:680px">100 boxes, 0 legendaries:<br>0.99<sup>100</sup> = <span class="y">0.366</span> → happens to 37% of honest players</div>
+  <div class="a stamp g" data-s="2" style="left:110px;top:450px;font-size:32px">fail to reject: just unlucky</div>
+  <div class="a sm" data-s="3" style="left:90px;top:570px;width:680px">300 boxes, still 0:<br>0.99<sup>300</sup> = <span class="y">0.049</span> ≤ 0.05</div>
+  <div class="a stamp r" data-s="3" style="left:110px;top:690px;font-size:32px">reject H<sub>0</sub>: write the Reddit post</div>
+  <img class="a cut spin" data-s="4" src="img/roulette.png" alt="a roulette wheel" style="left:850px;top:130px;width:190px">
+  <div class="a sm" data-s="4" style="left:1060px;top:140px;width:500px"><span class="y">Monte Carlo, 1913:</span> a fair wheel hit black 26 times in a row (≈ 1 in 137 million)</div>
+  <div class="a sm" data-s="5" style="left:850px;top:360px;width:700px">new casino: <span class="r">9 reds</span> in 10 spins. P(red) = 18/37.<br>one-sided, α = 0.05 → region {8, 9, 10} (0.046)</div>
+  <div class="a stamp r" data-s="5" style="left:870px;top:510px;font-size:32px">9 is in it: reject H<sub>0</sub></div>
+  <div class="a sm" data-s="6" style="left:850px;top:640px;width:700px">...but 1913 says fair wheels fail tests too.<br>that's a <span class="r">Type I error</span>, and α is how often.</div>
+</section>
+
+<!-- 9 · IQ SETUP -->
+<section class="slide" data-sec="Are CityU students smarter?">
+  <div class="a h" style="left:90px;top:30px">are CityU students smarter?</div>
+  <div class="a sm" data-s="1" style="left:90px;top:140px;width:820px">population IQ: μ = 100, σ = 15<br>H<sub>0</sub>: μ = 100 &nbsp;·&nbsp; H<sub>A</sub>: μ <span class="y">&gt;</span> 100 (one-sided), α = 0.05</div>
+  <div class="a" data-s="2" style="left:90px;top:290px;display:flex;gap:14px">
+    <div class="sticky" style="--r:-3deg;width:78px;height:70px;font-size:32px">112</div><div class="sticky" style="--r:2deg;width:78px;height:70px;font-size:32px">94</div><div class="sticky" style="--r:-1deg;width:78px;height:70px;font-size:32px">116</div>
+    <div class="sticky" style="--r:4deg;width:78px;height:70px;font-size:32px">140</div><div class="sticky" style="--r:-2deg;width:78px;height:70px;font-size:32px">91</div><div class="sticky" style="--r:1deg;width:78px;height:70px;font-size:32px">91</div>
+    <div class="sticky" style="--r:-4deg;width:78px;height:70px;font-size:32px">142</div><div class="sticky" style="--r:3deg;width:78px;height:70px;font-size:32px">119</div><div class="sticky" style="--r:-2deg;width:78px;height:70px;font-size:32px">85</div>
+  </div>
+  <div class="a big" data-s="3" style="left:90px;top:400px">9 students, average = <span class="y">110</span></div>
+  <div class="a bell" data-s="4" data-cfg='{"x":[55,145],"curves":[{"mu":100,"sd":15,"c":"w","dash":1},{"mu":100,"sd":5,"c":"y"}],"ticks":[70,85,100,115,130],"labels":[{"x":128,"y":250,"t":"1 person","c":"w"},{"x":110,"y":70,"t":"avg of 9","c":"y"}]}' style="left:70px;top:500px;width:560px"></div>
+  <div class="a sm" data-s="4" style="left:660px;top:560px;width:300px">averages wobble less:<br>σ / √n = 15 / 3 = <span class="y">5</span><br><span class="grey">(standard error)</span></div>
+  <div class="meme" data-s="5" style="left:1000px;top:130px;width:540px"><img src="img/memes/bellcurve.png" alt="IQ bell curve meme"></div>
+  <div class="a xs c" data-s="5" style="left:1000px;top:540px;width:540px;background:#fff;color:#111;padding:12px;border-radius:12px;font-size:28px">left &amp; right guy: "110 is past the fence. reject."<br>middle guy: "noooo you need z = (x̄ − μ)/(σ/√n) and Φ<sup>−1</sup>(0.95)..."</div>
+</section>
+
+<!-- 10 · IQ VERDICTS -->
+<section class="slide">
+  <div class="a big" style="left:90px;top:30px">one-sided, α = 0.05: <span class="sm grey">average of 9 under H<sub>0</sub>: mean 100, SD 5</span></div>
+  <div class="a bell" data-cfg='{"x":[82,118],"curves":[{"mu":100,"sd":5,"c":"y"}],"shade":[{"from":108.22,"to":118,"c":"r","s":1}],"lines":[{"x":108.22,"t":"108.22","c":"r","s":1}],"dot":{"x":110,"t":"110","c":"b","s":2},"ticks":[85,90,95,100,105,110,115]}' style="left:40px;top:110px;width:820px"></div>
+  <table class="a verdict" data-s="3" style="left:90px;top:530px;font-size:32px">
+    <tr><th>test</th><th>α</th><th>fence (z)</th><th>110 →</th></tr>
+    <tr><td>one-sided</td><td>0.05</td><td>108.22 (1.645)</td><td class="r">reject</td></tr>
+    <tr><td>one-sided</td><td>0.01</td><td>111.63 (2.326)</td><td class="g">fail to reject</td></tr>
+    <tr><td>two-sided</td><td>0.01</td><td>87.12 / 112.88 (±2.576)</td><td class="g">fail to reject</td></tr>
+    <tr><td>two-sided</td><td>0.05</td><td>90.20 / 109.80 (±1.96)</td><td class="r">reject, by 0.2</td></tr>
+  </table>
+  <div class="meme" data-s="4" style="left:1060px;top:110px;width:460px">
+    <img src="img/memes/pikachu.jpg" alt="Surprised Pikachu meme">
+    <div class="ml k" style="left:3%;top:2%;width:94%;font-size:22px;text-align:left">CityU: "we're just average"</div>
+    <div class="ml k" style="left:3%;top:13%;width:94%;font-size:22px;text-align:left">two-sided, α = 0.05: rejects H<sub>0</sub> by 0.2 IQ points</div>
+    <div class="ml k" style="left:3%;top:29%;width:94%;font-size:22px;text-align:left">CityU:</div>
+  </div>
+  <div class="a sm y" data-s="5" style="left:1060px;top:620px;width:460px">same data, 4 verdicts. pick α and the sides <b>before</b> you look.</div>
+</section>
+
+<!-- 11 · UNKNOWN SIGMA + t -->
+<section class="slide" data-sec="Unknown σ and the t-distribution">
+  <div class="a h" style="left:90px;top:30px">plot twist: nobody tells you σ</div>
+  <div class="meme" data-s="1" style="left:70px;top:130px;width:420px">
+    <img src="img/memes/drake.jpg" alt="Drake meme">
+    <div class="ml k" style="left:52%;top:14%;width:46%;font-size:28px">÷ n<br><span style="font-size:22px;font-weight:400">405.33</span></div>
+    <div class="ml k" style="left:52%;top:62%;width:46%;font-size:28px">÷ (n − 1)<br><span style="font-size:22px;font-weight:400">s² = 456, s = 21.35</span></div>
+  </div>
+  <div class="a sm" data-s="2" style="left:70px;top:580px;width:440px">estimate σ from the 9 scores<br>(Σ(x − 110)² = 3648)<br>SE = s / √n = 21.35 / 3 = <span class="y">7.12</span></div>
+  <div class="a bell" data-s="3" data-cfg='{"x":[68,132],"curves":[{"mu":100,"sd":7.12,"c":"w","dash":1},{"mu":100,"sd":7.12,"df":8,"c":"y","shaky":1}],"shade":[{"from":68,"to":83.58,"c":"r","s":4},{"from":116.42,"to":132,"c":"r","s":4}],"lines":[{"x":83.58,"t":"83.58","c":"r","s":4},{"x":116.42,"t":"116.42","c":"r","s":4}],"dot":{"x":110,"t":"110","c":"b","s":5},"ticks":[70,85,100,115,130]}' style="left:540px;top:130px;width:540px"></div>
+  <div class="a sm" data-s="3" style="left:560px;top:420px;width:520px"><span class="y">t-distribution</span> = the normal after it found out it doesn't know σ: fatter tails, df = n − 1 = 8</div>
+  <div class="a sm" data-s="4" style="left:560px;top:560px;width:520px">fence: ±2.306 (not ±1.96)<br>t = (110 − 100) / 7.12 = <span class="b">1.40</span></div>
+  <div class="a stamp g" data-s="5" style="left:580px;top:700px;font-size:32px">inside: fail to reject H<sub>0</sub></div>
+  <div class="meme" data-s="3" style="left:1120px;top:130px;width:430px">
+    <img src="img/memes/spiderman.jpg" alt="Spider-Man pointing meme">
+    <div class="ml" style="left:4%;top:78%;width:44%;font-size:28px">normal</div>
+    <div class="ml" style="left:52%;top:78%;width:44%;font-size:28px">t (df = 8)</div>
+  </div>
+  <img class="a cut" data-s="6" src="img/gosset.png" alt="William Sealy Gosset" style="left:1130px;top:430px;width:120px">
+  <img class="a cut" data-s="6" src="img/guinness.png" alt="a pint of stout" style="left:1260px;top:480px;width:60px">
+  <div class="a xs" data-s="6" style="left:1330px;top:440px;width:230px">invented by Gosset while testing barley at <span class="y">Guinness</span>, published in 1908 as "Student"</div>
+</section>
+
+<!-- 12 · RECAP -->
+<section class="slide" data-sec="Recap">
+  <div class="a h" style="left:90px;top:30px">the whole lecture in 4 panels</div>
+  <div class="a" style="left:90px;top:130px;display:flex;gap:28px">
+    <div class="panel" data-s="1" style="--r:-1deg;height:340px"><div class="stick" data-pose="stand" data-face="happy" style="width:90px;margin:24px auto 0"></div><div class="cap">1. assume <span class="y">innocent</span> (H<sub>0</sub>)</div></div>
+    <div class="panel" data-s="2" style="--r:1deg;height:340px"><img class="cut" src="img/magnifier.png" alt="" style="width:100px;margin:24px auto 0"><div class="cap">2. collect evidence (X)</div></div>
+    <div class="panel" data-s="3" style="--r:-0.5deg;height:340px"><div class="stick" data-pose="think" data-face="sus" style="width:90px;margin:24px auto 0"></div><div class="cap">3. would an innocent party do this?</div></div>
+    <div class="panel" data-s="4" style="--r:1.5deg;height:340px"><img class="cut slam" src="img/gavel.png" alt="" style="width:180px;margin:50px auto 0"><div class="cap">4. in the red zone (α)? <span class="r">convict</span></div></div>
+  </div>
+  <div class="a big" data-s="5" style="left:90px;top:520px;width:1400px">"not guilty" ≠ "innocent": failing to reject H<sub>0</sub> <span class="y">doesn't prove</span> H<sub>0</sub>.</div>
+  <div class="a sm" data-s="6" style="left:90px;top:650px">we're collecting donations in the form of <span class="y">correct exam answers</span>.</div>
+  <div class="a h" data-s="6" style="left:90px;top:740px">questions?</div>
+  <div class="stick a" data-s="6" data-pose="wave" data-face="happy" style="left:1260px;top:600px;width:130px"></div>
+  <div class="stick a" data-s="6" data-pose="wave" data-face="happy" data-c="b" style="left:1400px;top:620px;width:120px"></div>
+</section>
+
+
+</div>
+
+<nav id="nav" aria-label="slide navigation">
+  <button id="nPrev" type="button" aria-label="previous slide">‹ prev</button>
+  <span><input id="nNum" type="number" min="1" value="1" aria-label="go to slide number"> / <span id="nTot"></span></span>
+  <span id="nSec"></span>
+  <button id="nNext" type="button" aria-label="next slide">next ›</button>
+  <button id="nGrid" type="button">all slides (G)</button>
+  <button id="nFull" type="button">fullscreen (F)</button>
+</nav>
+<div id="grid" hidden><h2>all slides · click one to jump · Esc to close</h2><div id="gridInner"></div></div>
+
+<script>
+(function(){
+const C={y:'#F2D13B',r:'#FF4A4A',b:'#4BA3FF',g:'#5BD46B',w:'#F4F4F0',k:'#151515',grey:'#8a8a84'};
+const NS='http://www.w3.org/2000/svg';
+let seed=7;
+const opt=(c,x)=>Object.assign({stroke:C[c]||c,strokeWidth:4,roughness:1.3,bowing:1.2,seed:seed++},x||{});
+function mk(tag,attrs){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);return e;}
+function txt(svg,x,y,s,o){o=o||{};const t=mk('text',{x,y,'text-anchor':o.anchor||'middle','font-family':'Patrick Hand, Comic Sans MS, cursive','font-size':o.size||30,fill:C[o.c]||o.c||C.w});
+  if(o.stroke){t.setAttribute('stroke','#000');t.setAttribute('stroke-width',8);t.setAttribute('paint-order','stroke');}
+  t.textContent=s;svg.appendChild(t);return t;}
+function grp(parent,s){const g=mk('g');if(s){g.setAttribute('data-s',s);g.style.setProperty('--d',s);}parent.appendChild(g);return g;}
+function finish(svg){svg.querySelectorAll('path').forEach(p=>{p.setAttribute('pathLength','1');if(p.getAttribute('stroke-dasharray'))p.classList.add('dash');});}
+const hasRough=typeof rough!=='undefined';
+
+/* ---------- stick figures ---------- */
+const ARMS={stand:[[[80,108],[50,168]],[[80,108],[110,168]]],
+  wave:[[[80,108],[50,168]],[[80,108],[128,40]]],
+  point:[[[80,108],[50,168]],[[80,108],[158,100]]],
+  cheer:[[[80,108],[32,42]],[[80,108],[128,42]]],
+  shrug:[[[80,108],[48,128],[36,94]],[[80,108],[112,128],[124,94]]],
+  hold:[[[80,108],[50,168]],[[80,108],[128,132],[152,112]]],
+  think:[[[80,108],[50,168]],[[80,108],[114,132],[94,80]]],
+  sad:[[[80,110],[62,172]],[[80,110],[98,172]]]};
+function face(svg,rc,cx,cy,s,kind,col){
+  const P=(x,y)=>[cx+x*s,cy+y*s];const fo=x=>Object.assign({stroke:col,strokeWidth:Math.max(2.5,4*s),roughness:.6,seed:seed++},x||{});
+  const dot=(x,y,r)=>svg.appendChild(rc.circle(...P(x,y),(r||6)*s,fo({fill:col,fillStyle:'solid'})));
+  const ln=(a,b,c,d)=>svg.appendChild(rc.line(...P(a,b),...P(c,d),fo()));
+  const cv=pts=>svg.appendChild(rc.curve(pts.map(p=>P(p[0],p[1])),fo()));
+  if(kind==='sus'){ln(-18,-6,-6,-6);ln(6,-6,18,-6);ln(-20,-16,-5,-13);ln(5,-19,20,-22);ln(-6,14,12,12);return;}
+  if(kind==='smug'){cv([[-18,-5],[-12,-8],[-6,-5]]);cv([[6,-5],[12,-8],[18,-5]]);cv([[-10,12],[4,15],[16,6]]);return;}
+  if(kind==='shock'){svg.appendChild(rc.circle(...P(-12,-6),11*s,fo()));svg.appendChild(rc.circle(...P(12,-6),11*s,fo()));svg.appendChild(rc.ellipse(...P(0,16),12*s,15*s,fo()));return;}
+  dot(-12,-6);dot(12,-6);
+  if(kind==='happy'||kind==='sweat')cv([[-14,10],[0,18],[14,10]]);
+  else if(kind==='sad')cv([[-14,18],[0,10],[14,18]]);
+  else if(kind==='angry'){ln(-20,-20,-5,-12);ln(5,-12,20,-20);cv([[-14,18],[0,11],[14,18]]);}
+  else ln(-12,14,12,14);
+}
+function drawStick(el){
+  const c=el.dataset.c||'y',col=C[c],pose=el.dataset.pose||'stand',fk=el.dataset.face||'happy';
+  const svg=mk('svg',{viewBox:'0 -20 170 285','aria-hidden':'true'});el.appendChild(svg);if(!hasRough)return;
+  const rc=rough.svg(svg);const o=()=>opt(c,{strokeWidth:5});
+  svg.appendChild(rc.circle(80,50,68,o()));
+  svg.appendChild(rc.line(80,84,80,172,o()));
+  svg.appendChild(rc.line(80,172,52,248,o()));svg.appendChild(rc.line(80,172,108,248,o()));
+  for(const arm of ARMS[pose]||ARMS.stand)svg.appendChild(rc.linearPath(arm,o()));
+  face(svg,rc,80,50,1,fk,col);
+  if(fk==='sweat')svg.appendChild(rc.path('M120 22 q-8 14 0 18 q8 -4 0 -18z',{stroke:C.b,fill:C.b,fillStyle:'solid',strokeWidth:2,roughness:.5,seed:seed++}));
+  finish(svg);
+}
+
+/* ---------- free-hand ink overlay ---------- */
+function drawInk(el){
+  const svg=mk('svg',{viewBox:'0 0 1600 900','aria-hidden':'true'});el.appendChild(svg);if(!hasRough)return;
+  const rc=rough.svg(svg);
+  for(const cmd of el.dataset.d.split(';')){
+    const t=cmd.trim().split(/\s+/);const k=t[0];const n=t.slice(1).map(Number);
+    if(k==='line'){svg.appendChild(rc.line(n[0],n[1],n[2],n[3],opt(t[5]||'w',{strokeWidth:3})));}
+    else if(k==='x'){const [x1,y1,x2,y2]=n;svg.appendChild(rc.line(x1,y1,x2,y2,opt('r',{strokeWidth:12,roughness:1.6})));svg.appendChild(rc.line(x1,y2,x2,y1,opt('r',{strokeWidth:12,roughness:1.6})));}
+    else if(k==='bars'){const [x,y,w,h]=n;const o=()=>opt('#bdbdb6',{strokeWidth:9});for(let i=0;i<=5;i++)svg.appendChild(rc.line(x+i*w/5,y,x+i*w/5,y+h,o()));svg.appendChild(rc.line(x-10,y,x+w+10,y,o()));svg.appendChild(rc.line(x-10,y+h,x+w+10,y+h,o()));}
+    else if(k==='face'){const [cx,cy,sz]=n;face(svg,rc,cx,cy,sz/60,t[4],C[t[5]]||C.k);}
+    else if(k==='q'){txt(svg,n[0],n[1],'?',{size:110,c:t[3]||'y'});}
+    else if(k==='arrow'){const [x1,y1,x2,y2]=n;const c=t[5]||'y';const bend=n[5]||40;
+      const mx=(x1+x2)/2,my=(y1+y2)/2,dx=x2-x1,dy=y2-y1,L=Math.hypot(dx,dy)||1;const cx=mx-dy/L*bend,cy=my+dx/L*bend;
+      svg.appendChild(rc.curve([[x1,y1],[cx,cy],[x2,y2]],opt(c)));const a=Math.atan2(y2-cy,x2-cx);
+      for(const s of[-1,1])svg.appendChild(rc.line(x2,y2,x2-24*Math.cos(a+s*.5),y2-24*Math.sin(a+s*.5),opt(c)));}
+  }
+  finish(svg);
+}
+
+/* ---------- binomial bar chart ---------- */
+const choose=(n,k)=>{let r=1;for(let i=1;i<=k;i++)r=r*(n-k+i)/i;return r;};
+const PMF=Array.from({length:11},(_,k)=>choose(10,k)/1024);
+const list=s=>s?s.split(',').filter(v=>v!=='').map(Number):[];
+function renderBinom(el,o){
+  el.innerHTML='';const W=880,H=500;const svg=mk('svg',{viewBox:`0 0 ${W} ${H}`,role:'img','aria-label':'bar chart of the number of heads in 10 fair flips'});el.appendChild(svg);if(!hasRough)return;
+  const rc=rough.svg(svg);const x0=70,base=400,gap=(W-x0-30)/11,bw=gap*.68;
+  const values=o.values||PMF;const sc=320/(o.max||0.25);
+  const ax=()=>opt('w',{strokeWidth:3});
+  svg.appendChild(rc.line(x0-24,base,W-10,base,ax()));svg.appendChild(rc.line(x0-24,base,x0-24,40,ax()));
+  svg.appendChild(rc.line(W-10,base,W-26,base-10,ax()));svg.appendChild(rc.line(W-10,base,W-26,base+10,ax()));
+  txt(svg,x0-10,30,o.ylabel||'chance',{size:26,c:'grey',anchor:'start'});
+  for(let k=0;k<=10;k++){
+    const x=x0+k*gap+(gap-bw)/2,h=Math.max(values[k]*sc,values[k]>0?3:0);
+    if(h>0)svg.appendChild(rc.rectangle(x,base-h,bw,h,opt('y',{strokeWidth:3})));
+    const fill=(c,s,extra)=>{if(h<=0)return;const g=grp(svg,s);g.appendChild(rc.rectangle(x,base-h,bw,h,opt(c,Object.assign({strokeWidth:3,fill:C[c],fillStyle:'hachure',hachureGap:7,fillWeight:2.5},extra))));};
+    if(o.green.includes(k))fill('g',o.gs);
+    if(o.hi.includes(k))fill('b',o.hs,{fillStyle:'cross-hatch'});
+    if(o.red.includes(k))fill('r',o.rs);
+    if(o.tr.includes(k)){const g=grp(svg,o.ts);g.appendChild(rc.rectangle(x-4,base-h-4,bw+8,h+4,opt('r',{strokeWidth:4,strokeLineDash:[10,8]})));txt(g,x+bw/2,base-h-48,'?',{size:40,c:'r'});}
+    txt(svg,x+bw/2,base+38,String(k),{size:32});
+    if(o.vals)txt(svg,x+bw/2,base-h-12,o.fmt?o.fmt(values[k]):values[k].toFixed(3).replace(/^0/,''),{size:22,c:'grey'});
+  }
+  txt(svg,(x0+W)/2,base+88,o.xlabel||'number of heads in 10 flips',{size:28,c:'grey'});
+  finish(svg);
+}
+function binomFromEl(el){const d=el.dataset;renderBinom(el,{red:list(d.red),rs:d.rs,green:list(d.green),gs:d.gs,hi:list(d.hi),hs:d.hs,tr:list(d.try),ts:d.ts,vals:!!d.vals});}
+
+/* ---------- bell curves (normal / t) ---------- */
+function lgamma(z){const c=[0.99999999999980993,676.5203681218851,-1259.1392167224028,771.32342877765313,-176.61502916214059,12.507343278686905,-0.13857109526572012,9.9843695780195716e-6,1.5056327351493116e-7];
+  if(z<0.5)return Math.log(Math.PI/Math.sin(Math.PI*z))-lgamma(1-z);z-=1;let x=c[0];for(let i=1;i<9;i++)x+=c[i]/(z+i);const t=z+7.5;return .5*Math.log(2*Math.PI)+(z+.5)*Math.log(t)-t+Math.log(x);}
+function pdfOf(cv){return x=>{const z=(x-cv.mu)/cv.sd;if(!cv.df)return Math.exp(-z*z/2)/(cv.sd*Math.sqrt(2*Math.PI));const v=cv.df;
+  return Math.exp(lgamma((v+1)/2)-lgamma(v/2))/Math.sqrt(v*Math.PI)*Math.pow(1+z*z/v,-(v+1)/2)/cv.sd;};}
+function renderBell(el){
+  const cfg=JSON.parse(el.dataset.cfg);const W=1000,H=470,L=40,Rr=960,base=360,top=40;
+  const svg=mk('svg',{viewBox:`0 0 ${W} ${H}`,role:'img','aria-label':'bell curve'});el.appendChild(svg);if(!hasRough)return;const rc=rough.svg(svg);
+  const [a,b]=cfg.x;const X=v=>L+(v-a)/(b-a)*(Rr-L);const f0=pdfOf(cfg.curves[0]);
+  const ymax=Math.max(...cfg.curves.map(cv=>pdfOf(cv)(cv.mu)))*1.08;const Y=d=>base-d/ymax*(base-top);
+  const pts=(f,from,to,n)=>{const r=[];for(let i=0;i<=n;i++){const v=from+(to-from)*i/n;r.push([X(v),Y(f(v))]);}return r;};
+  for(const sh of cfg.shade||[]){const g=grp(svg,sh.s);const p=pts(f0,Math.max(a,sh.from),Math.min(b,sh.to),24);
+    g.appendChild(rc.polygon([[p[0][0],base],...p,[p[p.length-1][0],base]],opt(sh.c,{strokeWidth:2,fill:C[sh.c],fillStyle:'hachure',hachureGap:8,fillWeight:2.5})));}
+  svg.appendChild(rc.line(L-14,base,Rr+14,base,opt('w',{strokeWidth:3})));
+  for(const cv of cfg.curves){const g=grp(svg,cv.s);g.appendChild(rc.curve(pts(pdfOf(cv),a,b,70),opt(cv.c,{strokeWidth:cv.shaky?5:4,roughness:cv.shaky?2.4:1,strokeLineDash:cv.dash?[14,10]:undefined})));}
+  for(const t of cfg.ticks||[])txt(svg,X(t),base+40,String(t),{size:28,c:'grey'});
+  for(const ln of cfg.lines||[]){const g=grp(svg,ln.s);g.appendChild(rc.line(X(ln.x),base,X(ln.x),top+10,opt(ln.c,{strokeWidth:3,strokeLineDash:[12,9]})));
+    txt(g,X(ln.x),ln.low?base+104:base+76,ln.t,{size:28,c:ln.c,stroke:1});}
+  for(const lb of cfg.labels||[]){const g=grp(svg,lb.s);txt(g,X(lb.x),lb.y,lb.t,{size:30,c:lb.c,stroke:1});}
+  if(cfg.dot){const d=cfg.dot,g=grp(svg,d.s);g.appendChild(rc.circle(X(d.x),base,26,opt(d.c,{fill:C[d.c],fillStyle:'solid',strokeWidth:3})));
+    g.appendChild(rc.line(X(d.x),base-18,X(d.x),base-80,opt(d.c,{strokeWidth:3})));txt(g,X(d.x),base-92,d.t,{size:38,c:d.c,stroke:1});}
+  finish(svg);
+}
+
+/* ---------- build everything ---------- */
+document.querySelectorAll('[data-s]').forEach(e=>{if(!e.style.getPropertyValue('--d'))e.style.setProperty('--d',e.getAttribute('data-s'));});
+document.querySelectorAll('.stick').forEach(drawStick);
+document.querySelectorAll('.ink').forEach(drawInk);
+document.querySelectorAll('.binom').forEach(el=>{if(!el.id)binomFromEl(el);});
+document.querySelectorAll('.bell').forEach(renderBell);
+document.querySelectorAll('img').forEach(img=>img.addEventListener('error',()=>{img.style.visibility='hidden';}));
+
+/* ---------- PDF-style navigation ---------- */
+const stage=document.getElementById('stage'),slides=[...document.querySelectorAll('#stage > .slide')];
+const nav=document.getElementById('nav'),nNum=document.getElementById('nNum'),nSec=document.getElementById('nSec'),grid=document.getElementById('grid'),gridInner=document.getElementById('gridInner');
+document.getElementById('nTot').textContent=slides.length;nNum.max=slides.length;
+let sec='Intro';const secOf=slides.map(s=>(sec=s.dataset.sec||sec));
+let cur=0;
+function fit(){const s=Math.min(innerWidth/1600,innerHeight/900);stage.style.transform=`translate(-50%,-50%) scale(${s})`;}
+function show(i){
+  cur=Math.max(0,Math.min(slides.length-1,i));
+  slides.forEach((s,j)=>{s.classList.toggle('on',j===cur);if(j!==cur)s.classList.remove('play');});
+  const sl=slides[cur];sl.classList.remove('play');void sl.offsetWidth;sl.classList.add('play');
+  nNum.value=cur+1;nSec.textContent=secOf[cur];
+  try{history.replaceState(null,'','#s'+(cur+1));}catch(e){}
+}
+const next=()=>show(cur+1),prev=()=>show(cur-1);
+function buildGrid(){
+  if(gridInner.childElementCount)return;
+  slides.forEach((s,i)=>{const b=document.createElement('button');b.className='thumb';b.type='button';b.setAttribute('aria-label','slide '+(i+1));
+    const tin=document.createElement('div');tin.className='tin';const c=s.cloneNode(true);c.classList.remove('play');c.removeAttribute('id');c.querySelectorAll('[id]').forEach(e=>e.removeAttribute('id'));
+    tin.appendChild(c);b.appendChild(tin);const n=document.createElement('span');n.className='tn';n.textContent=i+1;b.appendChild(n);
+    b.addEventListener('click',()=>{closeGrid();show(i);});gridInner.appendChild(b);});
+  sizeThumbs();
+}
+function sizeThumbs(){const t=gridInner.querySelector('.thumb');if(!t)return;const sc=t.clientWidth/1600;gridInner.querySelectorAll('.tin').forEach(x=>x.style.transform=`scale(${sc})`);}
+function openGrid(){buildGrid();grid.hidden=false;sizeThumbs();gridInner.querySelectorAll('.thumb').forEach((t,i)=>t.classList.toggle('cur',i===cur));const c=gridInner.children[cur];if(c){c.scrollIntoView({block:'center'});c.focus({preventScroll:true});}}
+function closeGrid(){grid.hidden=true;}
+function toggleFull(){try{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen().catch(()=>{});}catch(_){}}
+document.getElementById('nPrev').onclick=prev;document.getElementById('nNext').onclick=next;
+document.getElementById('nGrid').onclick=openGrid;document.getElementById('nFull').onclick=toggleFull;
+nNum.addEventListener('change',()=>{const v=parseInt(nNum.value,10);if(v)show(v-1);nNum.blur();});
+let typed='',typedT=0;
+document.addEventListener('keydown',e=>{
+  if(e.target===nNum)return;
+  if(!grid.hidden){if(e.key==='Escape'||e.key==='g'||e.key==='G'){e.preventDefault();closeGrid();}return;}
+  if(e.target.matches&&e.target.matches('input[type=range]')&&(e.key==='ArrowLeft'||e.key==='ArrowRight'))return;
+  if(/^\d$/.test(e.key)){clearTimeout(typedT);typed+=e.key;typedT=setTimeout(()=>typed='',1500);return;}
+  if(e.key==='Enter'&&typed){show(parseInt(typed,10)-1);typed='';return;}
+  if(['ArrowRight','ArrowDown','PageDown',' '].includes(e.key)){e.preventDefault();next();}
+  else if(['ArrowLeft','ArrowUp','PageUp','Backspace'].includes(e.key)){e.preventDefault();prev();}
+  else if(e.key==='Home')show(0);else if(e.key==='End')show(slides.length-1);
+  else if(e.key==='g'||e.key==='G')openGrid();
+  else if(e.key==='f'||e.key==='F')toggleFull();
+  else if(e.key==='r'||e.key==='R')show(cur);
+});
+stage.addEventListener('click',e=>{if(e.target.closest('.ctl,button,input,label,a'))return;(e.clientX<innerWidth*0.2)?prev():next();});
+let wheelLock=0;addEventListener('wheel',e=>{if(!grid.hidden)return;const now=Date.now();if(now<wheelLock||Math.abs(e.deltaY)<25)return;wheelLock=now+450;(e.deltaY>0?next:prev)();},{passive:true});
+let tx=null;stage.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;},{passive:true});
+stage.addEventListener('touchend',e=>{if(tx===null)return;const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>50)(dx<0?next:prev)();tx=null;});
+let idleT;function wake(){nav.classList.remove('idle');clearTimeout(idleT);idleT=setTimeout(()=>{if(document.activeElement!==nNum)nav.classList.add('idle');},2500);}
+addEventListener('mousemove',wake);addEventListener('touchstart',wake,{passive:true});wake();
+addEventListener('resize',()=>{fit();if(!grid.hidden)sizeThumbs();});fit();
+const m=/^#s(\d+)$/.exec(location.hash);show(m?+m[1]-1:0);
+window.deckGo=n=>show(n-1);
+})();
+</script>
