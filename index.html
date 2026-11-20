@@ -49,6 +49,8 @@ table{color:inherit;font:inherit}
 .list-blank span.line{display:inline-block;width:520px;border-bottom:3px solid var(--ink);transform:translateY(-10px)}
 .btn{font-family:var(--hand);font-size:36px;background:transparent;color:var(--y);border:4px solid var(--y);padding:8px 28px;cursor:pointer;border-radius:3px;transform:rotate(-1deg)}
 .btn:hover{background:#2a2508}.btn.on{background:var(--y);color:#000}
+.nmcard{border:3px solid var(--grey);border-radius:6px;padding:12px 16px;box-sizing:border-box}
+.nmnum{font-size:58px;line-height:1.1}
 .btn:focus-visible,input:focus-visible,#nav button:focus-visible,.thumb:focus-visible{outline:4px dashed var(--b);outline-offset:4px}
 .coinrow{display:flex;gap:12px}
 .coinrow span{width:70px;height:70px;border-radius:50%;border:4px solid var(--y);display:grid;place-items:center;font-size:38px}
@@ -320,6 +322,30 @@ table.verdict th{color:var(--grey);font-size:30px;font-weight:normal}
   <img class="a cut" data-s="6" src="img/gosset.png" alt="William Sealy Gosset" style="left:1130px;top:430px;width:120px">
   <img class="a cut" data-s="6" src="img/guinness.png" alt="a pint of stout" style="left:1260px;top:480px;width:60px">
   <div class="a xs" data-s="6" style="left:1330px;top:440px;width:230px">invented by Gosset while testing barley at <span class="y">Guinness</span>, published in 1908 as "Student"</div>
+</section>
+
+<!-- 11b · WHY n − 1 (LIVE SIMULATOR) -->
+<section class="slide" id="s-nm1" data-sec="Why n − 1? (simulator)">
+  <div class="a h" style="left:90px;top:26px">why ÷ (n − 1)? watch it happen</div>
+  <div class="a sm grey" style="left:92px;top:108px;width:1420px">a fake world where we <span class="y">know</span> the truth: true mean 100, true SD 15 → true variance <span class="y">225</span></div>
+  <div class="a" style="left:90px;top:180px;width:620px;display:flex;flex-direction:column;gap:18px">
+    <div style="display:flex;align-items:center;gap:16px"><label class="sm" for="nmN">people per sample</label><input class="ctl" type="range" id="nmN" min="2" max="12" step="1" value="3" style="width:260px"><span class="big y" id="nmNOut">3</span></div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap"><button class="btn ctl" id="nmOne" type="button">draw 1 sample</button><button class="btn ctl" id="nmMany" type="button">draw 2,000</button><button class="btn ctl" id="nmReset" type="button">reset</button></div>
+    <div class="xs grey">averages below are over <span class="y" id="nmCnt">0</span> samples</div>
+  </div>
+  <div class="a" style="left:760px;top:170px;width:760px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+    <div class="nmcard" style="border-color:var(--grey)"><div class="xs">÷ n, true mean</div><div class="xs grey">cheating: we know it</div><div class="nmnum" id="nmT">–</div></div>
+    <div class="nmcard" style="border-color:var(--r)"><div class="xs r">÷ n, own average</div><div class="xs grey">too small</div><div class="nmnum r" id="nmA">–</div></div>
+    <div class="nmcard" style="border-color:var(--g)"><div class="xs g">÷ (n − 1), own avg</div><div class="xs grey">the fix</div><div class="nmnum g" id="nmB">–</div></div>
+  </div>
+  <svg class="a" id="nmLine" viewBox="0 0 1420 150" style="left:90px;top:385px;width:1420px;height:150px" aria-label="number line showing the latest sample"><line x1="20" y1="90" x2="1400" y2="90" stroke="#555" stroke-width="3"/><g id="nmTicks"></g><g id="nmMarks"></g></svg>
+  <div class="a sm" id="nmTxt" style="left:90px;top:545px;width:1420px">click "draw 1 sample".</div>
+  <div class="a nmcard" style="left:90px;top:610px;width:620px;border-color:var(--y)"><div class="sm"><span class="y">ask 1 student:</span> IQ 120. their own average is 120, so distance = 0.<br>÷ n says spread = <span class="r">0</span> ("everyone has the same IQ"). nonsense.<br>÷ (n − 1) says 0 ÷ 0: <span class="g">"can't tell"</span>. honest.</div></div>
+  <div class="a" style="left:760px;top:610px;width:760px;display:grid;grid-template-columns:1fr 1fr;gap:16px">
+    <div class="nmcard" style="border-color:var(--r)"><div class="xs">false alarms using s + fence <b>1.96</b></div><div class="nmnum r" id="nmFz">–</div></div>
+    <div class="nmcard" style="border-color:var(--g)"><div class="xs">false alarms using s + t fence <b id="nmTc">4.303</b></div><div class="nmnum g" id="nmFt">–</div></div>
+  </div>
+  <div class="a xs grey" style="left:760px;top:790px;width:760px">nothing is going on here (true mean really is 100), so a good test should be fooled only 5% of the time</div>
 </section>
 
 <!-- 12 · RECAP -->
@@ -614,5 +640,31 @@ addEventListener('mousemove',wake);addEventListener('touchstart',wake,{passive:t
 addEventListener('resize',()=>{fit();if(!grid.hidden)sizeThumbs();});fit();
 const m=/^#s(\d+)$/.exec(location.hash);show(m?+m[1]-1:0);
 window.deckGo=n=>show(n-1);
+})();
+</script>
+<script>
+(function(){
+const $=id=>document.getElementById(id);if(!$('nmLine'))return;
+const TC={1:12.706,2:4.303,3:3.182,4:2.776,5:2.571,6:2.447,7:2.365,8:2.306,9:2.262,10:2.228,11:2.201};
+const MU=100,SD=15,X=v=>20+(v-40)/120*1380,cl=v=>Math.max(20,Math.min(1400,X(v)));
+let n=3,S;
+function rn(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return MU+SD*Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+function draw(){const xs=Array.from({length:n},rn),m=xs.reduce((a,b)=>a+b,0)/n;
+  const sst=xs.reduce((a,x)=>a+(x-MU)**2,0),ss=xs.reduce((a,x)=>a+(x-m)**2,0),s=Math.sqrt(ss/(n-1)),t=Math.abs(m-MU)/(s/Math.sqrt(n));
+  S.k++;S.t+=sst/n;S.a+=ss/n;S.b+=ss/(n-1);if(t>1.96)S.fz++;if(t>TC[n-1])S.ft++;return{xs,m,sst,ss};}
+function one(r){let h=`<line x1="${X(MU)}" y1="20" x2="${X(MU)}" y2="90" stroke="#5BD46B" stroke-width="4"/><text x="${X(MU)}" y="16" text-anchor="middle" font-family="Patrick Hand,cursive" font-size="26" fill="#5BD46B">true mean 100</text>`;
+  h+=`<line x1="${cl(r.m)}" y1="44" x2="${cl(r.m)}" y2="90" stroke="#FF4A4A" stroke-width="4" stroke-dasharray="8 6"/><text x="${cl(r.m)}" y="142" text-anchor="middle" font-family="Patrick Hand,cursive" font-size="26" fill="#FF4A4A">own average ${r.m.toFixed(1)}</text>`;
+  r.xs.forEach(x=>h+=`<circle cx="${cl(x)}" cy="74" r="11" fill="#4BA3FF"/>`);$('nmMarks').innerHTML=h;
+  $('nmTxt').innerHTML=`this sample: distances² from <span class="g">true mean</span> = ${Math.round(r.sst)} · from <span class="r">own average</span> = ${Math.round(r.ss)} <span class="grey">→ own average always looks tighter</span>`;}
+function show(){const k=S.k||1,f=v=>S.k?Math.round(v/k):'–',p=v=>S.k?(100*v/k).toFixed(1)+'%':'–';
+  $('nmCnt').textContent=S.k.toLocaleString();$('nmT').textContent=f(S.t);$('nmA').textContent=f(S.a);$('nmB').textContent=f(S.b);
+  $('nmFz').textContent=p(S.fz);$('nmFt').textContent=p(S.ft);$('nmTc').textContent=TC[n-1].toFixed(3);}
+function reset(){S={k:0,t:0,a:0,b:0,fz:0,ft:0};one(draw());S={k:0,t:0,a:0,b:0,fz:0,ft:0};show();}
+let tk='';for(let v=40;v<=160;v+=20)tk+=`<line x1="${X(v)}" y1="82" x2="${X(v)}" y2="98" stroke="#555" stroke-width="3"/><text x="${X(v)}" y="122" text-anchor="middle" font-family="Patrick Hand,cursive" font-size="24" fill="#8a8a84">${v}</text>`;$('nmTicks').innerHTML=tk;
+$('nmN').addEventListener('input',e=>{n=+e.target.value;$('nmNOut').textContent=n;reset();});
+$('nmOne').addEventListener('click',()=>{one(draw());show();});
+$('nmMany').addEventListener('click',()=>{let r;for(let i=0;i<2000;i++)r=draw();one(r);show();});
+$('nmReset').addEventListener('click',reset);
+reset();
 })();
 </script>
