@@ -82,6 +82,22 @@ table.verdict th{color:var(--grey);font-size:30px;font-weight:normal}
 .slide.play .stick path:not(.dash),.slide.play .ink path:not(.dash),.slide.play .binom path:not(.dash),.slide.play .bell path:not(.dash){stroke-dasharray:1 1;stroke-dashoffset:1;animation:draw 1s ease-out both;animation-delay:calc(var(--d,0) * .55s + .25s)}
 .slide.play .coinrow span{animation:flip .7s ease-out both;animation-delay:calc(var(--i,0) * .07s)}
 #alphaChart path,#flipChart path{animation:none!important;stroke-dasharray:none!important}
+/* slot machine */
+.slot{width:400px;background:#1b1b1b;border:6px solid var(--y);border-radius:28px 28px 10px 10px;padding:18px 18px 14px;transform:rotate(-2deg);box-sizing:border-box}
+.slot-top{font-family:var(--meme);color:var(--r);font-size:46px;text-align:center;letter-spacing:.06em;margin-bottom:12px}
+.reels{display:flex;gap:10px;background:var(--paper);padding:10px;border-radius:8px}
+.reel{flex:1;height:110px;overflow:hidden;border:3px solid #111;background:#fff}
+.strip{transform:translateY(-1210px)}
+.strip div{height:110px;display:grid;place-items:center;font-family:var(--meme);font-size:62px;color:#111;line-height:1}
+.strip div.s7{color:var(--r)}.strip div.sT{color:#1f8a3b}
+.slot-base{margin-top:14px;font-family:var(--meme);font-size:30px;color:var(--y);text-align:center;letter-spacing:.03em}
+.slot-fine{font-size:20px;color:var(--grey);text-align:right}
+.lever{position:absolute;right:-46px;top:70px;width:12px;height:150px;background:#bbb;border-radius:6px;transform-origin:50% 100%}
+.lever::before{content:"";position:absolute;left:-14px;top:-30px;width:40px;height:40px;border-radius:50%;background:var(--r)}
+.slide.play .strip{animation:reel 1.5s cubic-bezier(.15,.7,.25,1) both;animation-delay:calc(var(--k,0) * .35s + .5s)}
+.slide.play .lever{animation:lever .6s ease-in-out both;animation-delay:.15s}
+@keyframes reel{from{transform:translateY(0)}to{transform:translateY(-1210px)}}
+@keyframes lever{0%,100%{rotate:0deg}45%{rotate:38deg}}
 @keyframes pop{from{opacity:0;scale:.9}to{opacity:1;scale:1}}
 @keyframes draw{to{stroke-dashoffset:0}}
 @keyframes flip{0%{opacity:0;transform:perspective(900px) rotateY(0);translate:0 60px}15%{opacity:1}55%{translate:0 -150px}100%{transform:perspective(900px) rotateY(1440deg);translate:0 0}}
@@ -316,10 +332,83 @@ table.verdict th{color:var(--grey);font-size:30px;font-weight:normal}
     <div class="panel" data-s="4" style="--r:1.5deg;height:340px"><img class="cut slam" src="img/gavel.png" alt="" style="width:180px;margin:50px auto 0"><div class="cap">4. in the red zone (α)? <span class="r">convict</span></div></div>
   </div>
   <div class="a big" data-s="5" style="left:90px;top:520px;width:1400px">"not guilty" ≠ "innocent": failing to reject H<sub>0</sub> <span class="y">doesn't prove</span> H<sub>0</sub>.</div>
-  <div class="a sm" data-s="6" style="left:90px;top:650px">we're collecting donations in the form of <span class="y">correct exam answers</span>.</div>
-  <div class="a h" data-s="6" style="left:90px;top:740px">questions?</div>
-  <div class="stick a" data-s="6" data-pose="wave" data-face="happy" style="left:1260px;top:600px;width:130px"></div>
-  <div class="stick a" data-s="6" data-pose="wave" data-face="happy" data-c="b" style="left:1400px;top:620px;width:120px"></div>
+  <div class="a big" data-s="6" style="left:90px;top:680px">next: the formulas. then we go to <span class="y">Kapchagay</span>.</div>
+  <div class="stick a" data-s="6" data-pose="point" data-face="smug" style="left:1300px;top:600px;width:140px"></div>
+</section>
+
+<!-- 13 · FORMULAS -->
+<section class="slide" data-sec="Formulas">
+  <div class="a h" style="left:90px;top:30px">the formulas you actually use</div>
+  <div class="a paper rot" data-s="1" style="--r:-0.8deg;left:90px;top:130px;width:1420px;font-size:27px;line-height:1.35">
+    <table>
+      <tr><td style="width:300px"><b>Coin-type (count) data</b></td><td>P(X = k) = C(n, k) · p<sup>k</sup> · (1 − p)<sup>n − k</sup><br><span class="hand">add the most extreme outcomes to the rejection region while their total P ≤ α</span></td></tr>
+      <tr><td><b>Standard error</b></td><td>σ known: SE = σ / √n &nbsp;&nbsp;·&nbsp;&nbsp; σ unknown: SE = s / √n</td></tr>
+      <tr><td><b>Sample variance</b></td><td>s² = Σ(x − x̄)² / (n − 1)</td></tr>
+      <tr><td><b>z-test</b> (σ known)</td><td>z = (x̄ − μ<sub>0</sub>) / (σ / √n) &nbsp;&nbsp;→&nbsp;&nbsp; fence = μ<sub>0</sub> ± z<sub>crit</sub> · SE</td></tr>
+      <tr><td><b>t-test</b> (σ unknown)</td><td>t = (x̄ − μ<sub>0</sub>) / (s / √n), &nbsp;df = n − 1</td></tr>
+      <tr><td><b>Critical values</b></td><td>one-sided: z 1.645 (α = .05), 2.326 (.01) &nbsp;·&nbsp; two-sided: ±1.96 (.05), ±2.576 (.01)<br>t with df = 8: 1.860 (one-sided .05), ±2.306 (two-sided .05)</td></tr>
+      <tr><td><b>Decision</b></td><td>in the rejection region → reject H<sub>0</sub>; otherwise → fail to reject (never "accept")</td></tr>
+    </table>
+  </div>
+  <div class="stick a" data-s="2" data-pose="point" data-face="happy" style="left:1380px;top:740px;width:95px"></div>
+  <div class="a sm y" data-s="2" style="left:1040px;top:800px">screenshot this one</div>
+</section>
+
+<!-- 14 · KAPCHAGAY 1: SLOT MACHINE (BINOMIAL) -->
+<section class="slide" data-sec="Kapchagay practice">
+  <div class="a sec-num" style="left:90px;top:40px">KAPCHAGAY PROBLEM 1</div>
+  <div class="a big" style="left:90px;top:80px">the stingy slot machine</div>
+  <div class="slot a" style="left:110px;top:220px">
+    <div class="slot-top">KAPCHAGAY</div>
+    <div class="reels"><div class="reel" data-final="7" style="--k:0"></div><div class="reel" data-final="7" style="--k:1"></div><div class="reel" data-final="₸" style="--k:2"></div></div>
+    <div class="slot-base">WIN ON 20% OF SPINS!*</div>
+    <div class="slot-fine">*trust me bro</div>
+    <div class="lever"></div>
+  </div>
+  <div class="a" data-s="1" style="left:620px;top:200px;width:920px;font-size:38px">the sign says you win on <span class="y">20%</span> of spins. you play <span class="y">20</span> spins and win only <span class="r">once</span>. is the machine tighter than advertised? use α = 0.05.</div>
+  <button class="btn ctl reveal a" data-target="ans1" type="button" style="left:620px;top:420px">show answer</button>
+  <div class="a sm" id="ans1" hidden style="left:620px;top:510px;width:920px">
+    H<sub>0</sub>: p = 0.2 &nbsp;·&nbsp; H<sub>A</sub>: p &lt; 0.2 (one-sided: too few wins) &nbsp;·&nbsp; X ~ Binomial(20, 0.2)<br>
+    P(0 wins) = 0.8<sup>20</sup> = <span class="y">0.012</span> <span class="g">✓</span> &nbsp;·&nbsp; add 1 win: 0.012 + 0.058 = 0.069 <span class="r">✗ over 0.05</span><br>
+    rejection region = <span class="y">{0}</span>. you won once, so...
+    <div class="stamp g" style="--d:1;display:inline-block;margin-top:24px;font-size:34px">fail to reject: you're not cursed, just broke</div>
+  </div>
+</section>
+
+<!-- 15 · KAPCHAGAY 2: PAYBACK (z-TEST) -->
+<section class="slide">
+  <div class="a sec-num" style="left:90px;top:40px">KAPCHAGAY PROBLEM 2</div>
+  <div class="a big" style="left:90px;top:80px">"95% payback", allegedly</div>
+  <div class="a" data-s="1" style="left:90px;top:200px;display:flex;gap:16px">
+    <div class="sticky" style="--r:-3deg;width:150px;font-size:38px">950₸?</div><div class="sticky" style="--r:3deg;width:150px;font-size:38px">870₸</div>
+  </div>
+  <div class="stick a" data-s="1" data-pose="shrug" data-face="sad" style="left:150px;top:360px;width:150px"></div>
+  <div class="a" data-s="1" style="left:620px;top:190px;width:920px;font-size:36px">a casino claims its slots pay back <span class="y">950₸</span> per 1000₸ bet on average (σ = 200₸). you track <span class="y">25</span> sessions: average <span class="r">870₸</span>. is it paying less? try α = 0.05, then α = 0.01.</div>
+  <button class="btn ctl reveal a" data-target="ans2" type="button" style="left:620px;top:420px">show answer</button>
+  <div class="a sm" id="ans2" hidden style="left:620px;top:510px;width:920px">
+    H<sub>0</sub>: μ = 950 &nbsp;·&nbsp; H<sub>A</sub>: μ &lt; 950 (one-sided) &nbsp;·&nbsp; SE = 200 / √25 = 40 &nbsp;·&nbsp; z = (870 − 950) / 40 = <span class="y">−2.0</span><br>
+    α = 0.05: fence = 950 − 1.645 × 40 = 884.2 → 870 is below it → <span class="r">reject H<sub>0</sub></span><br>
+    α = 0.01: fence = 950 − 2.326 × 40 = 857.0 → 870 is above it → <span class="g">fail to reject</span>
+    <div class="stamp r" style="--d:1;display:inline-block;margin-top:24px;font-size:34px">sus at 5%, not proven at 1%</div>
+  </div>
+</section>
+
+<!-- 16 · KAPCHAGAY 3: BLACKJACK SYSTEM (t-TEST) -->
+<section class="slide">
+  <div class="a sec-num" style="left:90px;top:40px">KAPCHAGAY PROBLEM 3</div>
+  <div class="a big" style="left:90px;top:80px">your friend's blackjack "system"</div>
+  <div class="stick a" data-s="1" data-pose="cheer" data-face="smug" data-c="b" style="left:180px;top:200px;width:170px"></div>
+  <div class="a sm b c" data-s="1" style="left:90px;top:500px;width:400px">"bro it works, trust"</div>
+  <div class="a" data-s="2" style="left:620px;top:190px;width:920px;font-size:36px">his 9 nights in Kapchagay (thousand ₸):<br><span class="y">+5, −4, +8, −6, +6, +4, −3, +7, +1</span><br>does the system make money on average? α = 0.05.</div>
+  <button class="btn ctl reveal a" data-target="ans3" type="button" style="left:620px;top:420px">show answer</button>
+  <div class="a sm" id="ans3" hidden style="left:620px;top:510px;width:920px">
+    H<sub>0</sub>: μ = 0 (does nothing) &nbsp;·&nbsp; H<sub>A</sub>: μ &gt; 0 &nbsp;·&nbsp; x̄ = 18 / 9 = 2<br>
+    Σ(x − x̄)² = 216 → s² = 216 / 8 = 27 → s = 5.20 → SE = 5.20 / 3 = 1.73<br>
+    σ unknown → t = 2 / 1.73 = <span class="y">1.15</span>, df = 8. fence (one-sided .05) = 1.860 → <span class="g">fail to reject</span>
+    <div class="stamp g" style="--d:1;display:inline-block;margin-top:24px;font-size:34px">his system = pure luck</div>
+    <div class="xs grey" style="margin-top:10px">(and those are only the nights he told you about)</div>
+  </div>
+  <div class="a xs grey" data-s="3" style="left:90px;top:820px;width:1400px">moral: the house always wins. we're collecting donations in the form of <span class="y">correct exam answers</span>.</div>
 </section>
 
 
@@ -463,6 +552,14 @@ document.querySelectorAll('.ink').forEach(drawInk);
 document.querySelectorAll('.binom').forEach(el=>{if(!el.id)binomFromEl(el);});
 document.querySelectorAll('.bell').forEach(renderBell);
 document.querySelectorAll('img').forEach(img=>img.addEventListener('error',()=>{img.style.visibility='hidden';}));
+
+/* ---------- slot machine reels + show-answer buttons ---------- */
+const SYMS=['₸','BAR','7','$','BAR','₸','7','$','BAR','₸','7'];
+document.querySelectorAll('.reel').forEach((r,i)=>{const s=document.createElement('div');s.className='strip';
+  const list=SYMS.slice(i%3).concat(SYMS.slice(0,i%3)).slice(0,11).concat([r.dataset.final]);
+  s.innerHTML=list.map(x=>`<div class="${x==='7'?'s7':x==='₸'?'sT':''}">${x}</div>`).join('');r.appendChild(s);});
+if(/[?&]answers\b/.test(location.search))document.querySelectorAll('.reveal').forEach(b=>{const t=document.getElementById(b.dataset.target);if(t){t.hidden=false;b.textContent='hide answer';}});
+document.querySelectorAll('.reveal').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();const t=document.getElementById(b.dataset.target);if(!t)return;t.hidden=!t.hidden;b.textContent=t.hidden?'show answer':'hide answer';}));
 
 /* ---------- PDF-style navigation ---------- */
 const stage=document.getElementById('stage'),slides=[...document.querySelectorAll('#stage > .slide')];

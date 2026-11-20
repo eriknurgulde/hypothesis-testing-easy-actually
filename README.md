@@ -1,6 +1,6 @@
 # Hypothesis testing is easy, actually
 
-A 12-slide CS 217 (Week 11) presentation on hypothesis testing, plus a two-presenter speaker script.
+A 16-slide CS 217 (Week 11) presentation on hypothesis testing, plus a two-presenter speaker script.
 
 - **Slides:** open `index.html` on the GitHub Pages site. → / Space / click = next, ← = back, **G** = all slides, **F** = fullscreen, **R** = replay animation.
 - **Speaker script:** [speaker_script.md](speaker_script.md)

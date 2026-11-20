@@ -1,12 +1,12 @@
-# Speaker script: "hypothesis testing is easy, actually" (12 slides)
+# Speaker script: "hypothesis testing is easy, actually" (16 slides)
 
-For two presenters, **A** and **B**. Swap the letters for your names. Target: about 12–15 minutes, roughly 1 minute per slide.
+For two presenters, **A** and **B**. Swap the letters for your names. Target: about 15–18 minutes: 1 minute per slide, plus 1–2 minutes per Kapchagay problem.
 
 ## Driving the deck
 - **→ / Space / wheel / click** = next slide. **←** = back. **G** = grid of all slides. Type a number + **Enter** to jump. **R** replays a slide's animation. **F** = fullscreen.
 - Each slide builds itself over 2–4 seconds. Start talking about the first item while the rest pops in, and let the meme or stamp at the end land on its own.
 
-**Split:** A does 1–6, B does 7–12. The handover line is marked ➜.
+**Split:** A does 1–6, B does 7–13, and you share the Kapchagay problems (A does 14, B does 15, both do 16). The handover line is marked ➜. On slides 14–16, the **show answer** button reveals the solution without changing the slide.
 
 ---
 
@@ -28,7 +28,7 @@ For two presenters, **A** and **B**. Swap the letters for your names. Target: ab
 
 ---
 
-## B (slides 7–12)
+## B (slides 7–13), then both (14–16)
 
 **7 · Alpha is a budget.** "Treat alpha like a budget. Add the most extreme results to the red zone one at a time and stop before the total goes over alpha. Two-sided at 0.05: 0, 1, 9, 10 cost 0.021. Adding 2 and 8 makes it 0.109, over budget. So the region is {0, 1, 9, 10}. The table has all four versions. Piece of cake."
 
@@ -41,9 +41,19 @@ Casino. In 1913, at Monte Carlo, a fair wheel hit black 26 times in a row, about
 
 **11 · Plot twist: unknown σ.** "In real life nobody gives you σ. You estimate it from your 9 scores. *(Drake)* Don't divide by n. Divide by n − 1, because the sample sits closer to its own average than to the truth. That gives s = 21.35, so the SE is 21.35 / 3 = 7.12. Since we guessed σ, we use the t-distribution: the normal after it found out it doesn't know σ. It has fatter tails, with df = n − 1 = 8. *(Spider-Man)* The fence becomes ±2.306 instead of ±1.96. Our t is (110 − 100) / 7.12 = 1.40, which is inside, so we fail to reject. Fun fact: Gosset invented it at the Guinness brewery and published as 'Student'."
 
-**12 · Recap + outro.** "Assume innocent. Collect evidence. Ask whether an innocent party would do this. Convict only in the red zone. And 'not guilty' isn't 'innocent': failing to reject H₀ doesn't prove it.
-**A:** We're collecting donations in the form of correct exam answers.
-**A + B:** Questions?"
+**12 · Recap.** "Assume innocent. Collect evidence. Ask whether an innocent party would do this. Convict only in the red zone. And 'not guilty' isn't 'innocent': failing to reject H₀ doesn't prove it. Next: the formulas, then we go to Kapchagay."
+
+**13 · Formulas.** "Every formula from today on one card. Binomial for counts. Standard error is σ/√n, or s/√n if you had to estimate σ. z when σ is known, t with n − 1 degrees of freedom when it isn't. Fence = μ₀ ± critical value × SE. Screenshot it, because the next three slides use all of it."
+
+**14 · Kapchagay problem 1: stingy slot machine.** *(Lever pulls, reels spin, it lands 7-7-₸. So close.)* "The sign says you win on 20% of spins. You play 20 and win once. Tighter than advertised? Give the class ~20 seconds, then click **show answer**. H₀: p = 0.2, H_A: p < 0.2. Zero wins has probability 0.8²⁰ = 0.012, under budget. Adding one win brings it to 0.069, over. So the rejection region is {0}, and one win isn't in it. You're not cursed, just broke."
+
+**15 · Kapchagay problem 2: '95% payback'.** "The casino says slots pay back 950₸ per 1000₸ on average, σ = 200. Your 25 sessions average 870. *(pause, show answer)* SE = 200/5 = 40, z = −2. At α = 0.05 the fence is 884.2, 870 is below it, reject. At α = 0.01 the fence is 857, 870 is above it, fail to reject. Suspicious at 5%, not proven at 1%. Same data, different α, different verdict, just like the IQ slide."
+
+**16 · Kapchagay problem 3: the blackjack 'system'.** "Your friend's 9 nights: +5, −4, +8, −6, +6, +4, −3, +7, +1 (thousand ₸). Does it make money? *(pause, show answer)* Mean 2. σ is unknown, so we use s: s² = 216/8 = 27, s = 5.20, SE = 1.73, t = 1.15 with 8 df. The one-sided fence is 1.860, so we fail to reject. His system is pure luck, and those are only the nights he told you about.
+**A:** Moral: the house always wins.
+**B:** We're collecting donations in the form of correct exam answers."
+
+> Tip: open the deck with `?answers` at the end of the address (before the `#`) to show all three answers at once while you prep.
 
 ---
 
